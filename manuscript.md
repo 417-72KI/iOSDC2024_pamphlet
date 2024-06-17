@@ -90,7 +90,16 @@ Swiftスクリプトの場合は `#!/usr/bin/swift` ではなく `#!/usr/bin/env
 
 厳密にはビルトインFrameworkであればimportはできますがコード補完が効きづらいですし、そこまで複雑なことをやるようであれば大人しくExecutableなSwift Packageを作成するのが良いです。
 
-ただし、ネットワーク通信が必要な場合はLinuxでの動作を考慮して`FoundationNetworking`を別途importする必要があります。
+SwiftフォーラムではスクリプトでもPackageを扱えるような提案[^3]が出ていますが、2023年3月から更新されていないのが現状です。
+
+[^3]: https://forums.swift.org/t/46717
+
+#### 例外
+Linuxでの動作を考慮して、以下のimportが必要になる場合があります。
+これはスクリプトに限らず、Linux環境でも使えるPackageを作成する場合は同様です。
+
+- `FoundationNetworking`
+`URL`や`URLSession`などのネットワーク関連のクラスを使う場合に必要です。
 
 ```swift
 #if canImport(FoundationNetworking)
@@ -98,15 +107,44 @@ import FoundationNetworking
 #endif
 ```
 
-また、Linux用の `URLSession` は `async/await` に対応していない[^3]ため、`withCheckedThrowingContinuation` 等を使う必要があります。
+- `FoundationXML`
+`XMLParser`など、XMLを扱う場合に必要です。
+```swift
+#if canImport(FoundationXML)
+import FoundationXML
+#endif
+```
 
-[^3]: Swift 5.10現在
+### Swift Concurrency と `URLSession`
+Swift 5.7からトップレベルでの`async/await`がサポートされました。
+昨年のパンフレット記事[^4]でも触れているので、去年のパンフレットをお持ちの方はそちらも読んでいただけると幸いです。
 
-SwiftフォーラムではスクリプトでもPackageを扱えるような提案[^4]が出ていますが、2023年3月から更新されていないのが現状です。
+しかし、Linux用の `URLSession` は `async/await` に直接対応していない[^5]ため、 `async/await` で扱うために `withCheckedThrowingContinuation` 等を使う必要があります。
 
-[^4]: https://forums.swift.org/t/46717
+[^4]: https://fortee.jp/iosdc-japan-2023/proposal/4f2e18ac-666b-4edc-b1aa-45bc81d102a6
+[^5]: Swift 5.10現在
 
-Linux環境下でも `async/await` でネットワーク通信を扱いうためのワークアラウンドとして、Darwin環境向けに用意されている `async` なfunctionをextensionとして生やす方法があります。
+Linux環境下でも `async/await` でネットワーク通信を扱うためのワークアラウンドとして、Darwin環境向けに用意されている `async` なfunctionをextensionとして生やす方法があります。
+
+```swift
+#if os(Linux)
+extension URLSession {
+    func data(for request: URLRequest) async throws -> (Data, URLResponse) {
+        try await withCheckedThrowingContinuation { cont in
+            dataTask(with: request) { (data, response, error) in
+                if let error {
+                    cont.resume(throwing: error)
+                } else if let data, let response {
+                    cont.resume(returning: (data, response))
+                } else {
+                    cont.resume(throwing: URLError(.unknown))
+                }
+            }.resume()
+        }
+    }
+}
+#endif
+```
 
 ## 終わりに
 今までシェルスクリプトを使っていた人も、Swiftスクリプトに乗り換えてみてはいかがでしょうか？
