@@ -83,7 +83,7 @@ header-includes: |
 実行時のインタプリタを指定するためのもので、シェルスクリプトだと `#!/bin/sh` や `#!/bin/bash` 、 `#!/bin/zsh` がよく使われます。
 
 Swiftスクリプトの場合は `#!/usr/bin/swift` ではなく `#!/usr/bin/env swift` と書くのが良いです。
-`#!/usr/bin/swift` だと、`/usr/bin/swift` が存在しない環境(Linux等)でスクリプトを実行するとエラーになりますが、`/usr/bin/env` を使うことで `PATH` から `swift` コマンドを探してくれます。
+`#!/usr/bin/swift` だと、例えば `/usr/local/bin/swift` にインストールされた環境でスクリプトを実行するとエラーになりますが、`/usr/bin/env` を使うことで `PATH` から `swift` コマンドを探してくれます。
 
 ### import
 スクリプトでは`Foundation`以外のimportは原則使えないと考えましょう。
@@ -105,6 +105,8 @@ import FoundationNetworking
 SwiftフォーラムではスクリプトでもPackageを扱えるような提案[^4]が出ていますが、2023年3月から更新されていないのが現状です。
 
 [^4]: https://forums.swift.org/t/46717
+
+Linux環境下でも `async/await` でネットワーク通信を扱いうためのワークアラウンドとして、Darwin環境向けに用意されている `async` なfunctionをextensionとして生やす方法があります。
 
 ## 終わりに
 今までシェルスクリプトを使っていた人も、Swiftスクリプトに乗り換えてみてはいかがでしょうか？
