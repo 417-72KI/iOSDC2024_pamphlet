@@ -7,7 +7,7 @@ header-includes: |
   <style>
     div.sourceCode { background-color: #ffffff; }
     pre.sourceCode:before { border: 1px solid #2a211c; content: " "; position: absolute; z-index: -1; }
-    pre.sourceCode { border: 1px solid #2a211c; }
+    pre.sourceCode { line-height: 16px; border: 1px solid #2a211c; }
     pre code.sourceCode { white-space: pre-wrap; position: relative; }
 
     div.sourceCode code.swift { color: #000000; }
@@ -26,6 +26,7 @@ header-includes: |
 
     # ul { margin: -5px 0; }
     ul li { margin: 10px 0; }
+    ol li { margin: 5px 0; }
   </style>
 ---
 
@@ -41,7 +42,7 @@ header-includes: |
 これにより、XcodeがなくてもSwiftを使った開発が容易になりました。  
 また、VSCode上であればSwiftスクリプトでもコード補完が実現できるようになりました。
 
-本稿では、VSCodeにSwift拡張機能を導入し、実際にSwiftスクリプトを書くための手順を紹介します。
+本稿では、VSCodeにSwift拡張機能を導入し、実際にSwiftスクリプトを書くための注意点を紹介します。
 
 
 ## 前提条件
@@ -80,7 +81,7 @@ header-includes: |
 
 ### Shebang
 スクリプトファイルの1行目に書く`#!`から始まる行をShebang(シバン)といいます。
-実行時のインタプリタを指定するためのもので、シェルスクリプトだと `#!/bin/sh` や `#!/bin/bash` 、 `#!/bin/zsh` がよく使われます。
+実行時のインタプリタを指定するためのもので、シェルスクリプトだと `#!/bin/sh` や `#!/bin/bash` 、 `#!/bin/zsh` がよく使われますね。
 
 Swiftスクリプトの場合は `#!/usr/bin/swift` ではなく `#!/usr/bin/env swift` と書くのが良いです。
 `#!/usr/bin/swift` だと、例えば `/usr/local/bin/swift` にインストールされた環境でスクリプトを実行するとエラーになりますが、`/usr/bin/env` を使うことで `PATH` から `swift` コマンドを探してくれます。
@@ -100,18 +101,14 @@ Linuxでの動作を考慮して、以下のimportが必要になる場合があ
 
 - `FoundationNetworking`  
 `URL`や`URLSession`などのネットワーク関連のクラスを使う場合に必要です。
+- `FoundationXML`  
+`XMLParser`など、XMLを扱う場合に必要です。
+
+これらをimportする際、`#if canImport ~ #endif`で囲むことによりmacOS、Linuxのどちらでもコンパイルが通るようになります。
 
 ```swift
 #if canImport(FoundationNetworking)
 import FoundationNetworking
-#endif
-```
-
-- `FoundationXML`  
-`XMLParser`など、XMLを扱う場合に必要です。
-```swift
-#if canImport(FoundationXML)
-import FoundationXML
 #endif
 ```
 
@@ -146,5 +143,33 @@ extension URLSession {
 #endif
 ```
 
+### Functions、Extensions
+スクリプトでもSwiftの言語仕様上扱えるものは基本的に全て扱えます。
+関数や`extension`などもその1つです。
+特にshellコマンドを実行する関数や`String`を直接`throw`できるような`extension`を作っておくと便利です。
+
+### 実際に書いてみた例
+以上を踏まえて、実際にSwiftスクリプトを書いてみましょう...と行きたいところですが、誌面が足りなくなってきたので実際にスクリプトをshからSwiftに置き換えた例として、筆者が個人で公開しているOSSライブラリ[^6]のリリース用スクリプトを一部抜粋して次ページに記載します。
+
+[^6]: https://github.com/417-72KI/MultipartFormDataParser
+
+変数の横に型が記載されていますが、これはVSCodeのSwift extensionが補完してくれているものになります。
+また、commandキーを押しながら関数の部分をクリックすると定義にジャンプしてくれます。
+
+![図: release.swift](./images/04_vscode.png)
+
+なお、Xcodeで同じファイルを開くと、コード補完が全く効いていないことがわかります。
+これだけでもVSCodeでスクリプトを書くメリットがあると言えるでしょう。
+
+![図: release.swift](./images/05_xcode.png)
+
+コード全体はGitHubに公開しているので、そちら[^7]をご覧ください。
+
+[^7]: https://github.com/417-72KI/MultipartFormDataParser/pull/87
+
 ## 終わりに
+VSCodeにSwift拡張機能を導入することで、Swiftスクリプトを簡単に書くことができるようになりました。
+
+shellスクリプトに比べてファイルサイズが大きくなったり、`sed` や `awk` を使ってワンライナーで書けていた処理も複数行に分けないといけないといったデメリットはありますが、それらを差し引いても可読性や保守性の観点から慣れた言語でスクリプトを書けるメリットは大きいでしょう。
+
 今までシェルスクリプトを使っていた人も、Swiftスクリプトに乗り換えてみてはいかがでしょうか？
