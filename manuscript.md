@@ -96,9 +96,9 @@ SwiftフォーラムではスクリプトでもPackageを扱えるような提�
 
 #### 例外
 Linuxでの動作を考慮して、以下のimportが必要になる場合があります。
-これはスクリプトに限らず、Linux環境でも使えるPackageを作成する場合は同様です。
+これはスクリプトに限らず、Linux環境でも使えるPackageを作成する場合は同様の点に注意しましょう。
 
-- `FoundationNetworking`
+- `FoundationNetworking`  
 `URL`や`URLSession`などのネットワーク関連のクラスを使う場合に必要です。
 
 ```swift
@@ -107,7 +107,7 @@ import FoundationNetworking
 #endif
 ```
 
-- `FoundationXML`
+- `FoundationXML`  
 `XMLParser`など、XMLを扱う場合に必要です。
 ```swift
 #if canImport(FoundationXML)
