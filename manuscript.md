@@ -26,7 +26,7 @@ header-includes: |
 
     # ul { margin: -5px 0; }
     ul li { margin: 10px 0; }
-    ol li { margin: 5px 0; }
+    ol li { margin: 3px 0; }
   </style>
 ---
 
@@ -77,7 +77,7 @@ header-includes: |
 
 ## 実際にVSCodeでSwiftスクリプトを書いてみよう
 
-ここではSwiftでスクリプトを書くにあたって最低限気をつけるべきポイントを紹介します。
+ここではSwiftでスクリプトを書くにあたって最低限気をつけるべきポイントとTipsを紹介します。
 
 ### Shebang
 スクリプトファイルの1行目に書く`#!`から始まる行をShebang(シバン)といいます。
@@ -85,6 +85,11 @@ header-includes: |
 
 Swiftスクリプトの場合は `#!/usr/bin/swift` ではなく `#!/usr/bin/env swift` と書くのが良いです。
 `#!/usr/bin/swift` だと、例えば `/usr/local/bin/swift` にインストールされた環境でスクリプトを実行するとエラーになりますが、`/usr/bin/env` を使うことで `PATH` から `swift` コマンドを探してくれます。
+
+### Functions、Extensions
+スクリプトでもSwiftの言語仕様上扱えるものは基本的に全て扱えます。
+関数や`extension`などもその1つです。
+特にshellコマンドを実行する関数や`String`を直接`throw`できるような`extension`を作っておくと便利です。
 
 ### import
 スクリプトでは`Foundation`以外のimportは原則使えないと考えましょう。
@@ -143,11 +148,6 @@ extension URLSession {
 #endif
 ```
 
-### Functions、Extensions
-スクリプトでもSwiftの言語仕様上扱えるものは基本的に全て扱えます。
-関数や`extension`などもその1つです。
-特にshellコマンドを実行する関数や`String`を直接`throw`できるような`extension`を作っておくと便利です。
-
 ### 実際に書いてみた例
 以上を踏まえて、実際にSwiftスクリプトを書いてみましょう...と行きたいところですが、誌面が足りなくなってきたので実際にスクリプトをshからSwiftに置き換えた例として、筆者が個人で公開しているOSSライブラリ[^6]のリリース用スクリプトを一部抜粋して次ページに記載します。
 
@@ -169,6 +169,7 @@ extension URLSession {
 
 ## 終わりに
 VSCodeにSwift拡張機能を導入することで、Swiftスクリプトを簡単に書くことができるようになりました。
+実際に使ってみて、その使い勝手の良さを体感していただけると幸いです。
 
 shellスクリプトに比べてファイルサイズが大きくなったり、`sed` や `awk` を使ってワンライナーで書けていた処理も複数行に分けないといけないといったデメリットはありますが、それらを差し引いても可読性や保守性の観点から慣れた言語でスクリプトを書けるメリットは大きいでしょう。
 
